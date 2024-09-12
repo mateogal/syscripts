@@ -1,4 +1,5 @@
-# THIS SCRIPT IS NOT FINISHED
+# This script is part of (https://github.com/mateogal/Syscripts)
+# THIS SCRIPT IS NOT COMPLETE
 
 #!/bin/bash
 RED='\033[1;31m'

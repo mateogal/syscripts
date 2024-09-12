@@ -1,3 +1,4 @@
+# This script is part of (https://github.com/mateogal/Syscripts)
 #Pre-requisites in all machines: Enable-PSRemoting
 
 $remote_hostname = "Srv-Host" # Hostname
