@@ -68,5 +68,5 @@ if len(RECORDS) > 0:
     deleteRecords()
     createRecords()
 else:
-    f.write(f"No need update \n")
+    f.write(f"No update needed. \n")
 f.close()
