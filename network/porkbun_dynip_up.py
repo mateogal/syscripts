@@ -10,14 +10,12 @@ RECORDS_NAME = ["*.example.com", "example.com"]  # Array of records names to del
 RECORDS_TYPE = ["A"]  # Array of records types to delete
 
 NEW_RECORDS = [
+    {"type": "A", "name": "*", "notes": ""},  # Optional text
     {
         "type": "A",
-        "name": "*"
+        "name": "",  # Empty for root domain record
+        "notes": "",  # Optional text
     },
-    {
-        "type": "A",
-        "name": ""  # Empty for root domain record
-    }
 ]  # Array of new records to create
 
 RECORDS = []  # Leave it empty
@@ -37,9 +35,15 @@ def getRecords():
     response = x.json()
     records = response["records"]
     for record in records:
-        if record["name"] in RECORDS_NAME and record["type"] in RECORDS_TYPE and record["content"] != format(ip):
+        if (
+            record["name"] in RECORDS_NAME
+            and record["type"] in RECORDS_TYPE
+            and record["content"] != format(ip)
+        ):
             RECORDS.append(record)
     f.write(f"Records found: {RECORDS} \n")
+    return len(response["records"])
+
 
 def deleteRecords():
     for record in RECORDS:
@@ -48,6 +52,7 @@ def deleteRecords():
         myobj = {"secretapikey": f"{SECRET_KEY}", "apikey": f"{API_KEY}"}
         x = requests.post(deleteUrl, json=myobj)
         f.write(f"API Request: {x.status_code} : {x.text} \n")
+
 
 def createRecords():
     for record in NEW_RECORDS:
@@ -59,12 +64,16 @@ def createRecords():
             "type": record["type"],
             "name": record["name"],
             "content": format(ip),
+            "notes": record["notes"],
         }
         x = requests.post(createURL, json=myobj)
         f.write(f"API Request: {x.status_code} : {x.text} \n")
 
-getRecords()
-if len(RECORDS) > 0:
+
+recCount = getRecords()
+if (
+    len(RECORDS) > 0 or recCount == 0
+):  # If current records  = 0 (recCount) create new records anyway
     deleteRecords()
     createRecords()
 else:
