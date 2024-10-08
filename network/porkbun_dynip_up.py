@@ -73,7 +73,7 @@ def createRecords():
 recCount = getRecords()
 if (
     len(RECORDS) > 0 or recCount == 0
-):  # If current records  = 0 (recCount) create new records anyway
+):  # If current records = 0 (recCount) create new records anyway
     deleteRecords()
     createRecords()
 else:
