@@ -4,17 +4,19 @@
 
 import requests
 from pathlib import Path
+from datetime import datetime
 
 DOMAIN = "example.com"  # Domain name
 RECORDS_NAME = ["*.example.com", "example.com"]  # Array of records names to delete
 RECORDS_TYPE = ["A"]  # Array of records types to delete
+now = (datetime.now()).strftime("%d/%m/%Y %H:%M:%S")
 
 NEW_RECORDS = [
-    {"type": "A", "name": "*", "notes": ""},  # Optional text
+    {"type": "A", "name": "*", f"notes": "Updated at {now}"},
     {
         "type": "A",
         "name": "",  # Empty for root domain record
-        "notes": "",  # Optional text
+        f"notes": "Updated at {now}",  # Optional text
     },
 ]  # Array of new records to create
 
@@ -26,23 +28,25 @@ API_URL = "https://api.porkbun.com/api/json/v3"  # Porkbun API URL
 ip = requests.get("https://api.ipify.org").text  # Current Public IP Addr
 
 f = open(f"{Path.home()}/porkbun.log", "w")  # Logs
+f.write(f"Started {now} \n")
 
 
 def getRecords():
+    recCount = 0
     getURL = f"{API_URL}/dns/retrieve/{DOMAIN}"
     myobj = {"secretapikey": f"{SECRET_KEY}", "apikey": f"{API_KEY}"}
     x = requests.post(getURL, json=myobj)
     response = x.json()
     records = response["records"]
     for record in records:
-        if (
-            record["name"] in RECORDS_NAME
-            and record["type"] in RECORDS_TYPE
-            and record["content"] != format(ip)
-        ):
-            RECORDS.append(record)
-    f.write(f"Records found: {RECORDS} \n")
-    return len(response["records"])
+        if record["name"] in RECORDS_NAME and record["type"] in RECORDS_TYPE:
+            if record["content"] != format(ip):
+                RECORDS.append(record)
+            recCount += 1
+
+    f.write(f"Current matched records count: {recCount} \n")
+    f.write(f"Records to update: {RECORDS} \n")
+    return recCount
 
 
 def deleteRecords():
