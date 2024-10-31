@@ -38,7 +38,7 @@ def handleWebhook(content):
             print("Server Start match")
             embed_object = {
                 "color": 5763719,
-                "title": f"Servidor Iniciado",
+                "title": f"Servidor Valheim Iniciado",
                 "description": f"Servidor {SERVER_DATA["name"]} iniciado!",
             }
             payload = {"embeds": [embed_object]}
@@ -50,7 +50,7 @@ def handleWebhook(content):
             print("Server Stop match")
             embed_object = {
                 "color": 15548997,
-                "title": f"Servidor detenido",
+                "title": f"Servidor Valheim detenido",
                 "description": f"Servidor {SERVER_DATA["name"]} ha sido detenido.",
             }
             payload = {"embeds": [embed_object]}
@@ -73,16 +73,16 @@ def handleWebhook(content):
             if match.group(2) == "0:0":
                 print("Match Player Dead")
                 color = 15105570
-                title = "Muerte de Jugador"
+                title = "Muerte de Jugador en Valheim"
                 description = (
-                    f"El jugador {player_name} ha muerto dentro de Valheim Server!"
+                    f"El jugador {player_name} ha muerto en {SERVER_DATA["name"]}!"
                 )
             else:
                 print("Match Player connection")
                 connection_list[-1]["PlayerName"] = player_name
                 color = 3447003
-                title = "Conexion de Jugador"
-                description = f"El jugador {player_name} se ha conectado a {SERVER_DATA["name"]} Valheim Server!"
+                title = "Conexion de Jugador en Valheim"
+                description = f"El jugador {player_name} se ha conectado a {SERVER_DATA["name"]}!"
 
             embed_object = {"color": color, "title": title, "description": description}
             payload = {"embeds": [embed_object]}
@@ -95,10 +95,10 @@ def handleWebhook(content):
             print("Match player disconnect")
             steam_id = match.group(1)
             color = 16776960
-            title = "Desconexion de Jugador"
+            title = "Desconexion de Jugador en Valheim"
             for player in connection_list:
                 if steam_id == player["SteamID"]:
-                    description = f"El jugador {player['PlayerName']} se ha desconectado de {SERVER_DATA["name"]} Valheim Server."
+                    description = f"El jugador {player['PlayerName']} se ha desconectado de {SERVER_DATA["name"]}."
                     connection_list.remove(player)
                     break
             print(connection_list)
