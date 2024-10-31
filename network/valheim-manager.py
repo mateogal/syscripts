@@ -134,7 +134,7 @@ def handleWebhook(content):
                 color = 15105570
                 title = "Muerte de Jugador en Valheim"
                 description = (
-                    f"El jugador {player_name} ha muerto en {SERVER_DATA["name"]}!"
+                    f"{player_name} ha muerto en {SERVER_DATA["name"]}!"
                 )
             else:
                 file_manager.write(
@@ -144,7 +144,7 @@ def handleWebhook(content):
                 color = 3447003
                 title = "Conexion de Jugador en Valheim"
                 description = (
-                    f"El jugador {player_name} se ha conectado a {SERVER_DATA["name"]}!"
+                    f"{player_name} se ha conectado a {SERVER_DATA["name"]}!"
                 )
 
             embed_object = {"color": color, "title": title, "description": description}
@@ -163,7 +163,7 @@ def handleWebhook(content):
                     file_manager.write(
                         f"{(datetime.now()).strftime("%Y-%m-%d %H:%M:%S")} : Match player disconnect {player['PlayerName']} \n"
                     )
-                    description = f"El jugador {player['PlayerName']} se ha desconectado de {SERVER_DATA["name"]}."
+                    description = f"{player['PlayerName']} se ha desconectado de {SERVER_DATA["name"]}."
                     connection_list.remove(player)
                     break
             print(connection_list)
