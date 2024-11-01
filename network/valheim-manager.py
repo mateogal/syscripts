@@ -21,6 +21,7 @@ SERVER_DATA = {
 
 os.environ["SteamAppId"] = "892970"
 connection_list = []
+newConnection_count = 0
 hook_url = ""
 
 open(RAW_LOG, "w").close()
@@ -117,7 +118,7 @@ def handleWebhook(content):
                 f"{(datetime.now()).strftime("%Y-%m-%d %H:%M:%S")} : Match new Connection handshake {match.group(1)} \n"
             )
             connection_list.append({"SteamID": match.group(1), "PlayerName": ""})
-            print(connection_list)
+            newConnection_count = newConnection_count + 1
             return
 
         # Player Connection and player death
@@ -133,9 +134,7 @@ def handleWebhook(content):
                 )
                 color = 15105570
                 title = "Muerte de Jugador en Valheim"
-                description = (
-                    f"{player_name} ha muerto en {SERVER_DATA["name"]}!"
-                )
+                description = f"{player_name} ha muerto en {SERVER_DATA["name"]}!"
             else:
                 file_manager.write(
                     f"{(datetime.now()).strftime("%Y-%m-%d %H:%M:%S")} : Match Player connection \n"
@@ -143,9 +142,8 @@ def handleWebhook(content):
                 connection_list[-1]["PlayerName"] = player_name
                 color = 3447003
                 title = "Conexion de Jugador en Valheim"
-                description = (
-                    f"{player_name} se ha conectado a {SERVER_DATA["name"]}!"
-                )
+                description = f"{player_name} se ha conectado a {SERVER_DATA["name"]}!"
+                newConnection_count = newConnection_count - 1
 
             embed_object = {"color": color, "title": title, "description": description}
             payload = {"embeds": [embed_object]}
