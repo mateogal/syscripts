@@ -1,7 +1,7 @@
+#!/bin/bash
 # This script is part of (https://github.com/mateogal/Syscripts)
 # THIS SCRIPT IS NOT COMPLETE
 
-#!/bin/bash
 RED='\033[1;31m'
 GREEN='\033[1;32m'
 BLUE='\033[1;34m'

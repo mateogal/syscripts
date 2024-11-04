@@ -1,7 +1,6 @@
+#!/bin/bash
 # Wordlist/Dictionary generator
 # This script is part of (https://github.com/mateogal/Syscripts)
-
-#!/bin/bash
 
 while getopts :p:o:r:s:h flag; do
     case "${flag}" in
