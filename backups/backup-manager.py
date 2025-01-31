@@ -15,8 +15,8 @@ import ssl
 import json
 from datetime import datetime
 
-client_name = ""
-backups = {
+client_name = ""  # Change this
+backups = {  # Change this
     "BkpName1": {
         "src": [
             "/source1/test.bak",
@@ -37,14 +37,14 @@ backups = {
         ],
     },
 }
-log_file = "/logs/backup/log"
-influxdb_config = {
+log_file = "/logs/backup/log"  # Change this
+influxdb_config = {  # Change this
     "url": "",
     "bucket": "",
     "token": "",
     "org": "",
 }
-email_config = {
+email_config = {  # Change this
     "server": "",
     "port": 465,
     "username": "",
@@ -75,7 +75,7 @@ def human_readable_size(size_in_bytes):
     return f"{size_in_bytes:.2f} {units[index]}"
 
 
-def compress_backup(src, dest, name):
+def compress_backup(dest, name):
     backup_name = os.path.join(dest, name)
     os.makedirs(backup_name, exist_ok=True)
     status = "ok"
@@ -83,34 +83,41 @@ def compress_backup(src, dest, name):
         zip_path = os.path.join(
             backup_name, f"backup_{datetime.now().strftime('%Y%m%d_%H%M%S')}.zip"
         )
-        if os.path.isdir(src):
-            with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
-                for root, _, files in os.walk(src):
-                    for file in files:
-                        file_path = os.path.join(root, file)
-                        try:
-                            zipf.write(file_path, os.path.relpath(file_path, src))
-                        except Exception as e:
-                            logging.warning(f"Compress error {file_path}: {e}")
-                            status = "Failed to compress some files. Check logs for more information."
-        else:
-            with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
-                try:
-                    zipf.write(src, os.path.basename(src))
-                except Exception as e:
-                    logging.warning(f"Compress error {src}: {e}")
-                    status = (
-                        "Failed to compress the file. Check logs for more information."
-                    )
+
+        with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
+            for src in backups[name]["src"]:
+                if os.path.isdir(src):
+                    source = src
+                    for root, _, files in os.walk(src):
+                        for file in files:
+                            file_path = os.path.join(root, file)
+                            try:
+                                zipf.write(file_path, os.path.relpath(file_path, src))
+                            except Exception as e:
+                                logging.error(f"Compress error {file_path}: {e}")
+                                status = "Failed to compress some files. Check logs for more information."
+                    logging.info(f"Compress success {source}")
+                else:
+                    try:
+                        zipf.write(src, os.path.basename(src))
+                        logging.info(f"Compress success {src}")
+                    except Exception as e:
+                        logging.error(f"Compress error {src}: {e}")
+                        status = "Failed to compress the file. Check logs for more information."
+
         return zip_path, status
     else:
-        tar_path = f"{backup_name}.tar.gz"
+        tar_path = os.path.join(
+            backup_name, f"backup_{datetime.now().strftime('%Y%m%d_%H%M%S')}.tar.gz"
+        )
         with tarfile.open(tar_path, "w:gz") as tar:
-            try:
-                tar.add(src, arcname=os.path.basename(src))
-            except Exception as e:
-                logging.warning(f"Compress error {src}: {e}")
-                status = "warning"
+            for src in backups[name]["src"]:
+                try:
+                    tar.add(src, arcname=os.path.basename(src))
+                    logging.info(f"Compress success {src}")
+                except Exception as e:
+                    logging.error(f"Compress error {src}: {e}")
+                    status = "warning"
         return tar_path, status
 
 
@@ -205,32 +212,32 @@ def send_to_influx(size, src, dest, status, host, log, final_free_space):
 def main():
     logging.info("Starting backup...")
     for bkp in backups:
-        for src in backups[bkp]["src"]:
-            for dest in backups[bkp]["dst"]:
-                try:
-                    backup_path, status = compress_backup(src, dest, bkp)
-                    level = "info" if (status == "ok") else "warning"
-                    size = os.path.getsize(backup_path)
-                    logging.info(
-                        f"Backup finished: {backup_path}, Size: {human_readable_size(size)}"
-                    )
-                    final_free_space = manage_history(dest, size)
-                    send_to_influx(
-                        size,
-                        src,
-                        dest,
-                        level,
-                        platform.node(),
-                        status,
-                        final_free_space,
-                    )
-                    email_body.append(
-                        f"Backup generated on {backup_path} with size {human_readable_size(size)}."
-                    )
-                except Exception as e:
-                    logging.info(f"Backup failed: {dest}, Error: {e}")
-                    send_to_influx(0, src, dest, "error", platform.node(), e)
-                    email_body.append(f"Backup failed: {src} -> {dest} with error {e}.")
+        for dest in backups[bkp]["dst"]:
+            try:
+                backup_path, status = compress_backup(dest, bkp)
+                level = "info" if (status == "ok") else "warning"
+                size = os.path.getsize(backup_path)
+                logging.info(
+                    f"Backup finished: {backup_path}, Size: {human_readable_size(size)}"
+                )
+                final_free_space = manage_history(dest, size)
+                send_to_influx(
+                    size,
+                    bkp,
+                    dest,
+                    level,
+                    platform.node(),
+                    status,
+                    final_free_space,
+                )
+                email_body.append(
+                    f"Backup generated on {backup_path} with size {human_readable_size(size)}."
+                )
+            except Exception as e:
+                logging.info(f"Backup failed: {dest}, Error: {e}")
+                send_to_influx(0, bkp, dest, "error", platform.node(), e)
+                email_body.append(f"Backup failed: {bkp} -> {dest} with error {e}.")
+
     send_email(
         f"Backup finished on {client_name} / {platform.node()}",
         email_body,
